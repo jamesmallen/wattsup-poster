@@ -1,4 +1,4 @@
-#!/usr/bin/python2.7
+#!/usr/bin/python
 
 # requires Python 2.x - not tested with Python 3.x
 
