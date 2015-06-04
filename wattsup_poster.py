@@ -94,48 +94,53 @@ def post_watt_hours(d):
 
     print(r)
 
-s = serial.Serial(SERIAL_PATH, baudrate=115200, timeout=3)
 
-count = 0
+def main():
+    s = serial.Serial(SERIAL_PATH, baudrate=115200, timeout=3)
 
-try:
+    count = 0
 
-    # H,R,0;
-    # h,-,18,W,V,A,WH,Cost,WH/Mo,Cost/Mo,Wmax,Vmax,Amax,Wmin,Vmin,Amin,PF,DC,PC,Hz,VA;
-    #     Command: Header record request.
-    #     Reply: Header record with the shown text.
+    try:
 
-    fake_flush(s)
+        # H,R,0;
+        # h,-,18,W,V,A,WH,Cost,WH/Mo,Cost/Mo,Wmax,Vmax,Amax,Wmin,Vmin,Amin,PF,DC,PC,Hz,VA;
+        #     Command: Header record request.
+        #     Reply: Header record with the shown text.
 
-    # s.write('#H,R,0;')
-    # time.sleep(.1)
+        fake_flush(s)
 
-    # data = get_packet(s)
-    # print("header:" + data)
+        # s.write('#H,R,0;')
+        # time.sleep(.1)
 
-    # L,W,3,E,<Reserved>,<Interval>;
-    # d,...
-    #     Command: Set the WattsUp to external Logging with this interval.
-    #     Reply: logging output records
-    s.write('#L,W,3,E,,1;',)
+        # data = get_packet(s)
+        # print("header:" + data)
 
-    fake_flush(s)
+        # L,W,3,E,<Reserved>,<Interval>;
+        # d,...
+        #     Command: Set the WattsUp to external Logging with this interval.
+        #     Reply: logging output records
+        s.write('#L,W,3,E,,1;',)
 
-    while True:
-        p = get_packet(s)
-        data = process_logging_packet(p)
-        print(data)
-        watt_hours = data['WH']
-        if count % UPDATE_INTERVAL == 0:
-            try:
-                print("POSTING %.1f WH..." % watt_hours)
-                post_watt_hours(watt_hours)
-            except Exception as e:
-                print(e)
-        count += 1
+        fake_flush(s)
+
+        while True:
+            p = get_packet(s)
+            data = process_logging_packet(p)
+            print(data)
+            watt_hours = data['WH']
+            if count % UPDATE_INTERVAL == 0:
+                try:
+                    print("POSTING %.1f WH..." % watt_hours)
+                    post_watt_hours(watt_hours)
+                except Exception as e:
+                    print(e)
+            count += 1
+
+    except Exception as e:
+        print(e)
+    finally:
+        s.close()
 
 
-except Exception as e:
-    print(e)
-finally:
-    s.close()
+if __name__ == '__main__':
+    main()
